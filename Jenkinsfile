@@ -1,56 +1,59 @@
-pipeline
+pipeline 
 {
     agent any
 
-    environment
+    environment 
     {
-        DOCKER_USERNAME = credentials('dockerhub-username')
-        IMAGE_NAME = 'spider-devops-induction'
-        IMAGE_TAG = 'latest'
+        DOCKER_USERNAME = 'smya13'
+        BACKEND_IMAGE   = 'spider-backend'
+        FRONTEND_IMAGE  = 'spider-frontend'
+        IMAGE_TAG       = "${env.BUILD_NUMBER}"
     }
 
-    stages
-    {
-        stage('Checkout Code')
+    stages {
+
+        stage('Checkout Code') 
         {
-            steps
+            steps 
             {
                 checkout scm
             }
         }
 
-        stage('Build Docker Image')
+        stage('Build Images')
         {
             steps
             {
                 sh '''
-                    docker build -t $DOCKER_USERNAME/$IMAGE_NAME:$IMAGE_TAG .
+                  docker build -t $DOCKER_USERNAME/$BACKEND_IMAGE:$IMAGE_TAG ./Backend
+                  docker build -t $DOCKER_USERNAME/$FRONTEND_IMAGE:$IMAGE_TAG ./Frontend
                 '''
             }
         }
 
-        stage('Push Image to Docker Hub')
+        stage('Push Images to Docker Hub') 
         {
-            steps
+            steps 
             {
-                withCredentials([string(credentialsId: 'dockerhub-password', variable: 'DOCKER_PASSWORD')])
+                withCredentials([string(credentialsId: 'dockerhub-password', variable: 'DOCKER_PASSWORD')]) 
                 {
                     sh '''
-                        echo "$DOCKER_PASSWORD" | docker login -u $DOCKER_USERNAME --password-stdin
-                        docker push $DOCKER_USERNAME/$IMAGE_NAME:$IMAGE_TAG
+                      echo "$DOCKER_PASSWORD" | docker login -u $DOCKER_USERNAME --password-stdin
+                      docker push $DOCKER_USERNAME/$BACKEND_IMAGE:$IMAGE_TAG
+                      docker push $DOCKER_USERNAME/$FRONTEND_IMAGE:$IMAGE_TAG
                     '''
                 }
             }
         }
 
-        stage('Deploy Locally using Docker Compose')
+        stage('Deploy using Docker Compose') 
         {
-            steps
+            steps 
             {
                 sh '''
-                    docker-compose down
-                    docker-compose pull
-                    docker-compose up -d
+                  docker-compose down
+                  docker-compose pull
+                  docker-compose up -d
                 '''
             }
         }
