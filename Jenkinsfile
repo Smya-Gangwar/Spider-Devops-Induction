@@ -51,7 +51,7 @@ pipeline
             steps 
             {
                 sh '''
-                  docker-compose down
+                  docker-compose down -v --remove-orphans
                   docker-compose pull
                   docker-compose up -d
                 '''
