@@ -44,18 +44,17 @@ pipeline {
                 withCredentials([
                     sshUserPrivateKey(
                         credentialsId: 'ec2-ssh-key',
-                        keyFileVariable: 'SSH_KEY',
-                        usernameVariable: 'EC2_USER'
+                        keyFileVariable: 'SSH_KEY'
                     )
                 ]) {
-                    sh '''
-                      ssh -o StrictHostKeyChecking=no -i $SSH_KEY ubuntu@3.109.1.112 << 'EOF'
-                        cd ~/Spider-Devops-Induction
-                        docker compose pull
-                        docker compose down
-                        docker compose up -d
-                      EOF
-                    '''
+                    sh """
+ssh -o StrictHostKeyChecking=no -i \$SSH_KEY ubuntu@3.109.1.112 << EOF
+cd ~/Spider-Devops-Induction
+docker-compose pull
+docker-compose down
+docker-compose up -d
+EOF
+"""
                 }
             }
         }
