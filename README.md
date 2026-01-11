@@ -301,12 +301,12 @@ cd Spider-Devops-Induction
 
 ### Jenkins → EC2 SSH Authentication
 #### Add Jenkins Credential
-Kind: SSH Username with private key
-Scope: Global
-ID: ec2-ssh-key
-Description: AWS EC2 SSH Key
-Username: ubuntu
-Private Key: contents of spider-ec2-key-v2.pem
+- Kind: SSH Username with private key
+- Scope: Global
+- ID: ec2-ssh-key
+- Description: AWS EC2 SSH Key
+- Username: ubuntu
+- Private Key: contents of spider-ec2-key-v2.pem
 
 ### GitHub SSH Access from EC2
 Generate SSH key on EC2:
@@ -331,9 +331,9 @@ git remote set-url origin git@github.com:Smya-Gangwar/Spider-Devops-Induction.gi
 ```
 
 #### Add SSH Key to GitHub
-Title: EC2 SSH Key
-Key Type: Authentication Key
-Key: contents of ~/.ssh/id_ed25519.pub
+- Title: EC2 SSH Key
+- Key Type: Authentication Key
+- Key: contents of ~/.ssh/id_ed25519.pub
 
 ### Cloud Deployment Flow
 1. GitHub push triggers Jenkins pipeline
