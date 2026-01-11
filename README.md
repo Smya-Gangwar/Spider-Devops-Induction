@@ -244,3 +244,107 @@ Any push to GitHub triggers the CI/CD pipeline automatically.
     e. docker-compose up -d
 4. Nginx + Backend + Frontend + PostgreSQL
 5. Application live on http://localhost/
+
+
+## Cloud Hosting (AWS EC2 Deployment)
+
+This level extends the CI/CD pipeline by deploying the containerized application to a cloud-hosted AWS EC2 instance.
+
+### AWS EC2 Instance Setup
+1. Login to AWS Console
+2. Create a new EC2 instance with the following configuration:
+    a. Instance Name: spider-devops-ec2
+    b. AMI: Ubuntu Server 24.04 LTS
+    c. Instance Type: t3.small
+    d. Storage: 25 GB (gp3)
+    e. Public IPv4: Enabled
+    f. Key Pair:
+        1. Name: spider-ec2-key-v2
+        2. Type: RSA
+        3. Format: .pem
+
+#### Security Group Rules
+| Port	  | Protocol 	| Purpose                               |
+|---------|-------------|---------------------------------------|
+| 22	  | TCP	        | SSH                                   |
+| 80	  | TCP	        | HTTP                                  |
+| 443	  | TCP	        | HTTPS                                 |
+| 8080	  | TCP	        | Jenkins (only if Jenkins runs on EC2) |
+
+Source: IPv4 – Anywhere
+
+3. Launch the Instance
+
+### Login to EC2 Instance
+```
+ssh -i spider-ec2-key-v2.pem ubuntu@3.109.1.112
+```
+
+### Install Required Packages on EC2
+```
+sudo apt update
+sudo apt install -y docker.io docker-compose-plugin
+sudo systemctl enable docker
+sudo systemctl start docker
+sudo usermod -aG docker ubuntu
+sudo apt install -y docker-compose
+newgrp docker
+```
+
+### Clone Project Repository on EC2
+```
+git clone https://github.com/Smya-Gangwar/Spider-Devops-Induction.git
+cd Spider-Devops-Induction
+```
+- Updated *docker-compose.yml* to pull images from Docker Hub
+- Updated *Jenkinsfile* to deploy via SSH to EC2
+
+### Jenkins → EC2 SSH Authentication
+#### Add Jenkins Credential
+Kind: SSH Username with private key
+Scope: Global
+ID: ec2-ssh-key
+Description: AWS EC2 SSH Key
+Username: ubuntu
+Private Key: contents of spider-ec2-key-v2.pem
+
+### GitHub SSH Access from EC2
+Generate SSH key on EC2:
+```
+ssh-keygen -t ed25519 -C "ec2-spider-devops"
+```
+
+Add key to SSH agent:
+```
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+```
+
+Verify GitHub access:
+```
+ssh -T git@github.com
+```
+
+Update repository remote:
+```
+git remote set-url origin git@github.com:Smya-Gangwar/Spider-Devops-Induction.git
+```
+
+#### Add SSH Key to GitHub
+Title: EC2 SSH Key
+Key Type: Authentication Key
+Key: contents of ~/.ssh/id_ed25519.pub
+
+### Cloud Deployment Flow
+1. GitHub push triggers Jenkins pipeline
+2. Jenkins builds Docker images
+3. Images pushed to Docker Hub
+4. Jenkins SSHs into EC2
+5. EC2 pulls latest images
+6. Containers restarted using Docker Compose
+7. Application becomes live
+
+### Live Application URL
+```
+http://3.109.1.112
+```
